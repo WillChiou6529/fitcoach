@@ -1,0 +1,88 @@
+# 每次推送到 main：打包 Android APK（發布到 Releases）＋更新網頁版（GitHub Pages）
+name: 打包 APK 與網頁版
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: 產生 Android 專案
+        run: |
+          npm install --no-audit --no-fund
+          node scripts/copy-www.js www
+          npx cap add android
+          npx cap sync android
+
+      - name: 換圖示、啟動畫面、版本號、震動權限
+        run: |
+          RES=android/app/src/main/res
+          find $RES -name 'splash.png' -delete
+          # 範本若在別的檔案定義了同名顏色就移除，避免重複定義
+          grep -rl 'name="ic_launcher_background"' $RES/values | grep -v ic_launcher_background.xml | xargs -r sed -i '/name="ic_launcher_background"/d'
+          cp -r android-res/* $RES/
+          sed -i -E "s/versionCode [0-9]+/versionCode ${{ github.run_number }}/; s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+          sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.VIBRATE" />#' android/app/src/main/AndroidManifest.xml
+          grep -E 'versionCode|versionName' android/app/build.gradle
+          grep permission android/app/src/main/AndroidManifest.xml
+
+      - name: 打包
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: 簽章
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          echo "$KS_B64" | base64 -d > ks.p12
+          $BT/zipalign -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+          $BT/apksigner sign --ks ks.p12 --ks-type PKCS12 --ks-key-alias fitcoach --ks-pass env:KS_PASS --out FitCoach.apk aligned.apk
+          $BT/apksigner verify --print-certs FitCoach.apk | head -3
+          rm ks.p12
+
+      - name: 發布到 Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=v1.0.${{ github.run_number }}
+          gh release create "$TAG" FitCoach.apk --latest --title "FitCoach $TAG" \
+            --notes "手機直接下載安裝：https://github.com/${{ github.repository }}/releases/latest/download/FitCoach.apk（第一次安裝要允許「安裝不明應用程式」；更新時直接覆蓋安裝，資料會保留）"
+
+  pages:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/copy-www.js _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
