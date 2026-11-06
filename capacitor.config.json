@@ -1,6 +1,6 @@
 {
   "appId": "com.willchiou.fitcoach",
-  "appName": "FitCoach",
+  "appName": "減肥啦幹",
   "webDir": "www",
   "android": {
     "adjustMarginsForEdgeToEdge": "force"

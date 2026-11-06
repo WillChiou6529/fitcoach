@@ -26,7 +26,7 @@ window.App = (function () {
     const st = Store.get();
     const p = st.profile;
     const el = $('#page-home');
-    if (!(p.height > 100 && p.weight > 25)) { el.innerHTML = '<div class="card"><h2>歡迎使用 FitCoach</h2><p>請先到「身體數據」輸入身高體重。</p></div>'; return; }
+    if (!(p.height > 100 && p.weight > 25)) { el.innerHTML = '<div class="card"><h2>歡迎使用減肥啦幹</h2><p>請先到「身體數據」輸入身高體重。</p></div>'; return; }
     const plan = Calc.plan(p);
     const today = U.today();
     const tg = Calc.dayTargets(plan, !!TrainPage.planFor(today).main, U.trainDays());
@@ -97,7 +97,7 @@ window.App = (function () {
     $('#exp').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(Store.get(), null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = `FitCoach備份_${U.today()}.json`; a.click();
+      a.href = URL.createObjectURL(blob); a.download = `減肥啦幹備份_${U.today()}.json`; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
     $('#copyBk').addEventListener('click', async () => {

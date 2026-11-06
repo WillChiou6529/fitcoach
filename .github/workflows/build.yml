@@ -70,7 +70,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=v1.0.${{ github.run_number }}
-          gh release create "$TAG" FitCoach.apk --latest --title "FitCoach $TAG" \
+          gh release create "$TAG" FitCoach.apk --latest --title "減肥啦幹 $TAG" \
             --notes "手機直接下載安裝：https://github.com/${{ github.repository }}/releases/latest/download/FitCoach.apk（第一次安裝要允許「安裝不明應用程式」；更新時直接覆蓋安裝，資料會保留）"
 
   pages:
