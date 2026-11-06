@@ -23,9 +23,10 @@ window.Tour = (function () {
     { page: 'train', find: () => { const b = $('[data-tpl]'); return b && b.closest('.row'); }, title: '⑪ 一鍵排課表', text: '第一次先選「每週幾天」，會自動排好每天練的部位，之後也可以個別調整。' },
     { page: 'train', find: sel('#trainTop .cal-grid') , alt: sel('.cal-grid'), title: '⑫ 訓練月曆', text: '每天練什麼、有沒有完成一眼看得到（綠＝完成、黃＝部分、紅＝漏練）。<b>點日期</b>就會打開那天的菜單。' },
     { page: 'train', find: sel('#dayDetail'), title: '⑬ 當天菜單', text: '從熱身、充血、主訓練到收操，每個動作都有組數、次數和休息時間。<br>做完就打勾；按「⏱ 休息」開始倒數；<b>點段落標題可以收合</b>。', tall: true },
-    { page: 'sleep', find: card('sleep', '我的工作時間'), title: '⑭ 作息規劃', text: '輸入上下班時間和通勤時間，自動排好起床、睡覺、三餐、訓練時段和咖啡因截止時間（支援夜班）。' },
-    { page: 'home', find: sel('#page-home .grid'), title: '⑮ 每天先看總覽', text: '今天還能吃多少、三大營養素進度、今天練什麼，這裡都看得到。' },
-    { page: 'settings', find: () => $$('#page-settings .card').find(c => c.offsetParent && /備份/.test(c.textContent)), title: '⑯ 記得備份', text: '資料只存在這台裝置裡。換手機、清除資料或解除安裝前，記得先備份。<br>想再看一次教學，就到這頁按「新手教學」。' },
+    { page: 'train', find: sel('#burnCard'), title: '⑭ 消耗與熱量赤字', text: '打勾的動作會依組數、次數和休息時間算出消耗；練完跑跑步機，就在下面填時間和機器顯示的熱量。<br>程式會用「消耗 − 吃的」算出今天的<b>熱量赤字</b>，總覽和飲食頁也看得到。' },
+    { page: 'sleep', find: card('sleep', '我的工作時間'), title: '⑮ 作息規劃', text: '輸入上下班時間和通勤時間，自動排好起床、睡覺、三餐、訓練時段和咖啡因截止時間（支援夜班）。' },
+    { page: 'home', find: sel('#page-home .grid'), title: '⑯ 每天先看總覽', text: '今天還能吃多少、三大營養素進度、今天練什麼，這裡都看得到。' },
+    { page: 'settings', find: () => $$('#page-settings .card').find(c => c.offsetParent && /備份/.test(c.textContent)), title: '⑰ 記得備份', text: '資料只存在這台裝置裡。換手機、清除資料或解除安裝前，記得先備份。<br>想再看一次教學，就到這頁按「新手教學」。' },
     { page: 'home', title: '準備好了！💪', text: '建議順序：<b>身體數據</b>確認一次 → 每餐<b>記錄飲食</b> → 照<b>月曆</b>訓練打勾 → 每週記一次體重。<br>加油，一起瘦下來！', last: true },
   ];
 

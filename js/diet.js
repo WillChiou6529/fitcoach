@@ -34,9 +34,13 @@ window.DietPage = (function () {
     }
     return best;
   }
+  // 開頭的超商品牌（「711 鮪魚飯糰」「全家的拿鐵」）：搜尋時另外用去掉品牌的字比對，份數判斷前也要先去掉，避免 711 被當成 711 份
+  const BRAND_RE = /^\s*(?:7\s*[-－–]?\s*(?:11|ELEVEN)|seven|小七|統一超商|全家便利商店|全家|萊爾富|ok\s*(?:mart|超商)?)\s*的?\s*/i;
+  const stripBrand = s => s.replace(BRAND_RE, '');
   function search(q, limit = 12) {
     q = q.trim(); if (!q) return [];
-    return entries().map(e => ({ e, raw: score(e.names, q) }))
+    const q2 = stripBrand(q).trim();
+    return entries().map(e => ({ e, raw: Math.max(score(e.names, q), q2 && q2 !== q ? score(e.names, q2) : 0) }))
       .filter(x => x.raw > 0).map(x => Object.assign(x, { s: x.raw + (x.e.type === 'preset' ? 3 : 0) }))
       .sort((a, b) => b.s - a.s).slice(0, limit).map(x => x.e);
   }
@@ -48,7 +52,7 @@ window.DietPage = (function () {
   // 「2顆滷蛋」「滷蛋x2」「半碗飯」→ { name, qty }
   const CN = { 一: 1, 兩: 2, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 半: 0.5 };
   function parseQty(seg) {
-    let qty = 1, s = seg.trim();
+    let qty = 1, s = stripBrand(seg.trim());
     // 阿拉伯數字單位可省略（2茶葉蛋）；國字數量一定要接單位，避免「半糖珍奶」的半被當成 0.5
     let m = s.match(/^(\d+(?:\.\d+)?)\s*(?:個|顆|碗|杯|份|塊|片|支|隻|條|根|盤|串|粒|瓶|包)?|^([一兩二三四五六半])\s*(?:個|顆|碗|杯|份|塊|片|支|隻|條|根|盤|串|粒|瓶|包)/);
     if (m && m[2]) m[1] = m[2];
@@ -454,12 +458,14 @@ window.DietPage = (function () {
         <div class="c"><b style="color:${over ? 'var(--bad)' : 'inherit'}">${num(tot.kcal)}</b><small>／ ${num(goal)} 大卡</small><small>${over ? '超過 ' + num(tot.kcal - goal) : '還剩 ' + num(goal - tot.kcal)}</small></div></div>
       ${tg.label ? `<p class="small" style="text-align:center;margin:6px 0 0"><span class="pill info">碳水循環：${tg.label}</span></p>` : ''}
       ${macro('蛋白質', tot.p, tg.p, 'p')}${macro('碳水', tot.c, tg.c, 'c')}${macro('脂肪', tot.f, tg.f, 'f')}
-      <p class="muted tiny" style="margin:2px 0 0">剩餘：蛋白質 ${num(Math.max(0, tg.p - tot.p))} g．碳水 ${num(Math.max(0, tg.c - tot.c))} g．脂肪 ${num(Math.max(0, tg.f - tot.f))} g　<a href="#body" style="color:var(--brand)">調整策略</a></p>
+      <div style="margin-top:12px">${Balance.summary(curDate, true)}</div>
+      <p class="muted tiny" style="margin:8px 0 0">剩餘：蛋白質 ${num(Math.max(0, tg.p - tot.p))} g．碳水 ${num(Math.max(0, tg.c - tot.c))} g．脂肪 ${num(Math.max(0, tg.f - tot.f))} g　<a href="#body" style="color:var(--brand)">調整策略</a></p>
       ${items.length ? `<details open style="margin-top:12px"><summary>熱量明細</summary><div class="receipt">
         ${MEALS.filter(([k]) => (log[k] || []).length).map(([k, l]) => `<div class="small muted" style="margin-top:8px">${l}</div>` +
           log[k].map(it => `<div class="ln"><span>${esc(it.name)}${it.qty !== 1 ? ' ×' + it.qty : ''}</span><span class="num"><small class="muted">P${num(it.p * it.qty, 1)} C${num(it.c * it.qty, 1)} F${num(it.f * it.qty, 1)}${it.sugar != null ? ` 糖${num(it.sugar * it.qty, 1)}` : ''}</small>　${num(it.kcal * it.qty)} 大卡</span></div>`).join('')).join('')}
         <div class="ln tot"><span>合計</span><span class="num"><small class="muted">P${num(tot.p)} C${num(tot.c)} F${num(tot.f)}</small>　${num(tot.kcal)} 大卡</span></div>
         ${tot.sugarN ? `<div class="muted tiny" style="text-align:right">有標示糖的 ${tot.sugarN} 項合計糖 ${num(tot.sugar, 1)} g</div>` : ''}</div></details>` : ''}`;
+    $$('#dSummary [data-go]').forEach(b => b.addEventListener('click', () => App.go(b.dataset.go)));
     $('#dTips').innerHTML = advise(curDate, plan).map(t => `<li class="${t.cls}">${t.t}</li>`).join('');
     renderWeek(goal);
   }

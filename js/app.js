@@ -52,6 +52,7 @@ window.App = (function () {
         <div class="stat"><div class="label">體重</div><div class="value">${num(p.weight, 1)}<small>kg</small></div>
           <div class="sub">${wk.length >= 2 ? `比第一筆 ${p.weight - first <= 0 ? '−' : '+'}${num(Math.abs(p.weight - first), 1)} kg．` : ''}距目標 ${num(Math.max(0, p.weight - plan.target), 1)} kg</div></div>
       </div>
+      <div class="card mb">${Balance.summary(today, true)}</div>
       <div class="grid g3 mb" style="align-items:start">
         <div class="card span2"><div class="row between"><h2>🧑‍⚕️ 今日飲食建議</h2><button class="ghost small" data-go="diet">看明細 →</button></div>
           <ul class="tips">${tips.map(t => `<li class="${t.cls}">${t.t}</li>`).join('')}</ul></div>

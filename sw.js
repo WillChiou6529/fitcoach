@@ -1,9 +1,11 @@
 // 離線快取（網頁版用；App 版內建檔案不需要）。改了任何檔案就把版本號 +1
-const CACHE = 'fitcoach-v2';
+const CACHE = 'fitcoach-v4';
 const FILES = [
   './',
   'css/style.css',
   'data/foods.js',
+  'data/foods_breakfast.js',
+  'data/foods_cvs.js',
   'data/stretch.js',
   'data/supplements.js',
   'data/workouts_a.js',
@@ -12,6 +14,7 @@ const FILES = [
   'icons/icon-512.png',
   'index.html',
   'js/app.js',
+  'js/balance.js',
   'js/body.js',
   'js/calc.js',
   'js/diet.js',

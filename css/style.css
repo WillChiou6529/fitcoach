@@ -284,6 +284,14 @@ svg text { fill: var(--muted); font-size: 11px; }
   .week-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
+/* ---- 熱量赤字 ---- */
+.bal-mini { display: flex; flex-direction: column; gap: 6px; }
+.bal-eq { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; font-size: 20px; font-weight: 800; }
+.bal-eq span { display: flex; flex-direction: column; line-height: 1.15; }
+.bal-eq small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.bal-eq i { font-style: normal; color: var(--muted); font-weight: 400; padding-bottom: 2px; }
+.bal-form label.f select { min-width: 130px; }
+
 /* ---- 新手教學 ---- */
 .tour { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
 .tour-block { position: fixed; pointer-events: auto; }

@@ -6,7 +6,6 @@ window.TrainPage = (function () {
 
   const DB = () => window.WORKOUT_DB || {};
   const ORDER = ['chest', 'back', 'legs', 'shoulders', 'arms', 'core', 'hiit', 'cardio'];
-  const MET = { chest: 5, back: 5, legs: 6, shoulders: 5, arms: 4.5, core: 3.8, hiit: 8, cardio: 7 };
   const PHASE_NO = { pre: 1, warmup: 2, activation: 3, main: 4, accessory: 5, cooldown: 6, post: 7 };
   const SD = () => window.STRETCH_DB;
 
@@ -95,6 +94,52 @@ window.TrainPage = (function () {
     const keys = blocks.flatMap(b => b.ph.items.map((_, i) => `${b.vid}:${b.ph.key}:${i}`));
     const addonMin = addonV ? Math.round(addonV.durationMin * 0.6) : 0;
     return { g, vi, v, addon, addonVi, addonV, sp, blocks, keys, addonMin, totalMin: v.durationMin + addonMin + sp.min };
+  }
+
+  // ---- 訓練消耗估算 ----
+  // 每個動作的時間 = 組數 ×（每組做的時間 + 組間休息）；每組時間 = 次數 × 每下秒數（節奏加總，沒寫用 3 秒）或維持秒數，「每側」× 2
+  // 熱量 =（MET − 1）× 體重 × 小時：只算「淨消耗」，因為基礎代謝已經算在每天的消耗裡，避免重複
+  // MET 參考 2024 Compendium of Physical Activities：阻力訓練（含組間休息）中高強度 5.0、一般 3.5～4.0、伸展 2.3、HIIT 8.0
+  const PHASE_MET = { pre: 4.0, warmup: 3.5, activation: 3.5, main: 5.0, accessory: 4.0, cooldown: 2.3, post: 2.3, restday: 2.3 };
+  const GROUP_MET = { hiit: 8.0, cardio: 7.0 };
+  function itemMinutes(it, sets) {
+    const r = String(it.reps || '');
+    const side = /每側|每邊|每腳|每隻/.test(r) ? 2 : 1;
+    const ns = (r.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+    const n = ns.length >= 2 && /^\D*\d+(?:\.\d+)?\s*[–~-]/.test(r) ? (ns[0] + ns[1]) / 2 : ns[0];
+    // 時間寫法可能是組合的：「45 秒衝刺＋75 秒輕鬆」→ 全部加起來；範圍取中間
+    const tm = [...r.matchAll(/(\d+(?:\.\d+)?)(?:\s*[–~-]\s*(\d+(?:\.\d+)?))?\s*(分鐘|秒)/g)];
+    let work;
+    if (it.hold) work = it.hold * side;
+    else if (tm.length) work = tm.reduce((s, m) => s + (+m[1] + +(m[2] || m[1])) / 2 * (m[3] === '秒' ? 1 : 60), 0) * side;
+    else if (/公尺|米/.test(r)) work = (n || 100) * 0.5;   // 距離：划船約 0.25、負重走約 0.8 秒／公尺，取 0.5
+    else {
+      const tp = String(it.tempo || '');
+      const per = /爆發/.test(tp) ? 1.5 : (tp.match(/\d+/g) || []).reduce((a, b) => a + +b, 0) || 3;
+      work = (/力竭/.test(r) && !/^\D*\d+\s*[–~-]/.test(r) ? 12 : n || 12) * side * per;
+    }
+    return sets * (work + (it.rest || 0)) / 60;
+  }
+  function burnOf(date) {
+    const w = Store.get().profile.weight || 70;
+    const plan = planFor(date);
+    const s = session(plan);
+    const done = Store.get().done[date] || {};
+    let blocks;
+    if (s) blocks = s.blocks.map(b => ({ ph: b.ph, vid: b.vid, group: b.addon ? plan.addon : plan.main }));
+    else { const rd = SD() && SD().restDay; blocks = rd ? [{ ph: { key: 'restday', items: rd.items }, vid: 'restday', group: '' }] : []; }
+    const r = { planned: 0, done: 0, plannedMin: 0, doneMin: 0, n: 0, total: 0 };
+    blocks.forEach(b => b.ph.items.forEach((it, i) => {
+      const key = b.ph.key;
+      const met = (key === 'main' || key === 'accessory') && GROUP_MET[b.group] ? GROUP_MET[b.group] : PHASE_MET[key] || 3.5;
+      const min = itemMinutes(it, key === 'restday' || !s ? it.sets || 1 : adjustSets(it, key).sets);
+      const kcal = (met - 1) * w * min / 60;
+      r.planned += kcal; r.plannedMin += min; r.total++;
+      if (done[`${b.vid}:${key}:${i}`]) { r.done += kcal; r.doneMin += min; r.n++; }
+    }));
+    ['planned', 'done', 'plannedMin', 'doneMin'].forEach(k => { r[k] = Math.round(r[k]); });
+    r.rest = !s;
+    return r;
   }
 
   // 某一天的完成狀態
@@ -395,14 +440,15 @@ window.TrainPage = (function () {
       box.innerHTML = `<div class="card">${dayHeader(date, plan)}<h2>休息日 😴</h2>
         <ul class="tips"><li class="info">休息日不是什麼都不做：散步 30–60 分鐘或每天 8,000 步以上（NEAT 日常活動消耗往往比運動本身還多）。</li>
         <li class="info">休息日的飲食照常，蛋白質一樣要吃足；有吃肌酸的話休息日也要吃。</li></ul>
-        ${rd ? phaseHtml({ key: 'restday', title: rd.title, items: rd.items }, 'restday', date) : ''}</div>`;
+        ${rd ? phaseHtml({ key: 'restday', title: rd.title, items: rd.items }, 'restday', date) : ''}</div>
+        <div class="card" id="burnCard" style="margin-top:16px"></div>`;
       bindHeader(box, date, plan, null);
       bindDetail(box, date);
       return;
     }
     const { g, vi, v, addon, addonVi, addonV, sp } = s;
     const w = st.profile.weight;
-    const kcal = Calc.burn(MET[plan.main] || 5, w, v.durationMin) + (addonV ? Calc.burn(MET[plan.addon] || 5, w, s.addonMin) : 0) + Calc.burn(2.5, w, sp.min);
+    const kcal = burnOf(date).planned;
     const firstAddon = s.blocks.findIndex(b => b.addon);
     const addonBlocks = s.blocks.filter(b => b.addon);
 
@@ -411,7 +457,7 @@ window.TrainPage = (function () {
       <div class="row between" style="align-items:flex-start">
         <div><h2 style="margin-bottom:4px">${g.emoji} ${g.name}${addon ? `＋${addon.name}` : ''}</h2>
           <div class="row" style="gap:6px"><span class="pill info">第 ${vi} 套：${esc(v.name)}</span><span class="pill gray">${esc(v.level)}</span>
-          <span class="pill gray">⏱ 約 ${s.totalMin} 分鐘（含前後伸展 ${sp.min} 分）</span><span class="pill gray">🔥 約消耗 ${num(kcal)} 大卡</span>
+          <span class="pill gray">⏱ 約 ${s.totalMin} 分鐘（含前後伸展 ${sp.min} 分）</span><span class="pill gray" title="依組數、次數、休息時間推算的淨消耗">🔥 全部做完約 ${num(kcal)} 大卡</span>
           ${st.profile.level !== '中階' ? `<span class="pill warn">已依「${st.profile.level}」調整組數</span>` : ''}</div></div>
         <div class="row"><div class="variant-tabs">${g.variants.map((x, i) => `<button class="${i + 1 === vi ? 'on' : ''}" data-v="${i + 1}" title="${esc(x.name)}">${i + 1}. ${esc(x.name)}</button>`).join('')}</div>
           <button class="ghost small" id="vRand">🎲 換一套</button></div>
@@ -431,6 +477,7 @@ window.TrainPage = (function () {
           addonBlocks.flatMap(x => x.ph.items.map(it => it.name)));
       }).join('')}
     </div>
+    <div class="card" id="burnCard" style="margin-top:16px"></div>
     ${fuelCard(w)}`;
 
     bindHeader(box, date, plan, s);
@@ -468,6 +515,7 @@ window.TrainPage = (function () {
 
   function bindDetail(box, date) {
     const st = Store.get();
+    Balance.mount($('#burnCard', box), date);
     $$('[data-fuel]', box).forEach(b => b.addEventListener('click', () => {
       const f = DietPage.foodById(b.dataset.fuel); if (!f) return;
       DietPage.setDate(U.today()); DietPage.addEntry({ type: 'food', ref: f }, 1, 'snack');
@@ -480,6 +528,7 @@ window.TrainPage = (function () {
       snapshot(date);
       Store.save(); c.closest('.ex').classList.toggle('done', c.checked);
       const f = c.closest('.fold'); if (f) updateFold(f, date);
+      Balance.mount($('#burnCard'), date);
       // 月曆上的完成狀態跟著更新
       if ((st.trainView || 'calendar') === 'calendar') renderCalendar();
       App.refresh('train');
@@ -553,7 +602,7 @@ window.TrainPage = (function () {
     return { g: s.g, v: s.v, addon: s.addon, total: st.total, done: st.n, main: (s.v.phases.find(p => p.key === 'main') || { items: [] }).items };
   }
 
-  return { render, todaySummary, planFor, status };
+  return { render, todaySummary, planFor, status, burnOf };
 })();
 
 // 組間休息／伸展計時器（右下角浮動）
