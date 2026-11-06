@@ -1,5 +1,5 @@
 // 離線快取（網頁版用；App 版內建檔案不需要）。改了任何檔案就把版本號 +1
-const CACHE = 'fitcoach-v1';
+const CACHE = 'fitcoach-v2';
 const FILES = [
   './',
   'css/style.css',
@@ -19,6 +19,7 @@ const FILES = [
   'js/sleep.js',
   'js/store.js',
   'js/train.js',
+  'js/tour.js',
   'manifest.webmanifest',
 ];
 self.addEventListener('install', e => {

@@ -284,6 +284,27 @@ svg text { fill: var(--muted); font-size: 11px; }
   .week-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
+/* ---- 新手教學 ---- */
+.tour { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+.tour-block { position: fixed; pointer-events: auto; }
+.tour-hole { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(10, 15, 25, .62); outline: 3px solid var(--brand); outline-offset: 0; transition: all .25s ease; pointer-events: none; }
+.tour-hole.none { outline: none; }
+.tour-card { position: fixed; width: 360px; max-width: calc(100vw - 24px); background: var(--panel); color: var(--text); border-radius: 16px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,0,.35); pointer-events: auto; transition: top .25s ease, left .25s ease; }
+.tour-card.nudge { animation: tourNudge .35s; }
+@keyframes tourNudge { 30% { transform: scale(1.04); } 60% { transform: scale(.98); } }
+.tour-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
+.tour-skip { font-size: 12px; padding: 2px 4px; }
+.tour-title { margin: 4px 0 6px; font-size: 17px; }
+.tour-text { font-size: 14px; line-height: 1.65; }
+.tour-act { margin-top: 8px; font-size: 13px; color: var(--brand); font-weight: 700; }
+.tour-dots { display: flex; gap: 4px; margin: 12px 0 10px; flex-wrap: wrap; }
+.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.tour-dots i.past { background: var(--brand-soft); border: 1px solid var(--brand); width: 7px; height: 7px; box-sizing: border-box; }
+.tour-dots i.on { background: var(--brand); width: 18px; border-radius: 4px; }
+.tour-btns { display: flex; justify-content: space-between; gap: 8px; }
+.tour-btns .tour-next { min-width: 96px; }
+.touring .suggest { max-height: 220px; }
+
 /* 表格太寬時可左右滑（App.wrapTables 自動包一層） */
 .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .tscroll > table.t { min-width: 100%; }

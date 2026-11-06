@@ -83,6 +83,7 @@ window.App = (function () {
         <div class="card m-only"><h2>📋 用文字備份（手機）</h2><p class="muted small">App 裡不能直接下載檔案：按「複製」後貼到 LINE 記事本或 Email 存起來；還原時貼回下方再按「還原」。</p>
           <div class="row"><button id="copyBk">複製備份文字</button><button class="ghost" id="pasteBk">從文字還原</button></div>
           <textarea id="bkText" rows="4" style="width:100%;margin-top:8px" placeholder="還原時把備份文字貼在這裡"></textarea></div>
+        <div class="card"><h2>❓ 新手教學</h2><p class="muted small">一步一步帶你認識每一頁怎麼用，約 2 分鐘，隨時可以略過。</p><button id="tourAgain">重新看教學</button></div>
         <div class="card m-only"><h2>🌓 外觀</h2><p class="muted small">深色／淺色模式切換。</p><button class="ghost" id="themeBtn2">切換深淺色</button></div>
         <div class="card"><h2>🗑️ 清除全部</h2><p class="muted small">回到初始狀態，無法復原（建議先匯出）。</p><button id="rst" style="background:var(--bad)">清除全部資料</button></div>
       </div>
@@ -113,6 +114,7 @@ window.App = (function () {
       } catch (err) { U.toast('還原失敗：請貼上完整的備份文字'); }
     });
     $('#themeBtn2').addEventListener('click', toggleTheme);
+    $('#tourAgain').addEventListener('click', () => Tour.start());
     $('#imp').addEventListener('change', e => {
       const f = e.target.files[0]; if (!f) return;
       const rd = new FileReader();
@@ -174,6 +176,8 @@ window.App = (function () {
     let start = location.hash.slice(1);
     if (!PAGES[start]) { try { start = sessionStorage.getItem('fitcoach.page') || 'home'; } catch (e) { start = 'home'; } }
     go(PAGES[start] ? start : 'home');
+    $('#tourBtn').addEventListener('click', () => Tour.start());
+    Tour.maybeStart();
     window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (PAGES[h] && h !== current) go(h); });
   }
 
