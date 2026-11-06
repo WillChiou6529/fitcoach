@@ -1,0 +1,8 @@
+{
+  "appId": "com.willchiou.fitcoach",
+  "appName": "FitCoach",
+  "webDir": "www",
+  "android": {
+    "adjustMarginsForEdgeToEdge": "force"
+  }
+}

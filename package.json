@@ -1,0 +1,16 @@
+{
+  "name": "fitcoach",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FitCoach 減脂教練：網頁版＋Android App（Capacitor 包裝）",
+  "scripts": {
+    "www": "node scripts/copy-www.js",
+    "android": "npm run www && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/cli": "^7.4.0",
+    "@capacitor/core": "^7.4.0"
+  }
+}
