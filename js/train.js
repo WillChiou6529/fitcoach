@@ -404,7 +404,7 @@ window.TrainPage = (function () {
     const w = st.profile.weight;
     const kcal = Calc.burn(MET[plan.main] || 5, w, v.durationMin) + (addonV ? Calc.burn(MET[plan.addon] || 5, w, s.addonMin) : 0) + Calc.burn(2.5, w, sp.min);
     const firstAddon = s.blocks.findIndex(b => b.addon);
-    const lastAddon = s.blocks.map(b => !!b.addon).lastIndexOf(true);
+    const addonBlocks = s.blocks.filter(b => b.addon);
 
     box.innerHTML = `<div class="card">
       ${dayHeader(date, plan)}
@@ -419,12 +419,16 @@ window.TrainPage = (function () {
       <p style="margin-top:10px"><b>重點：</b>${esc(v.focus)}　<span class="muted">器材：${esc((v.equipment || []).join('、') || '無')}</span></p>
       ${g.tips ? `<details><summary>${g.name}通用技術要點</summary><ul class="tips" style="margin-top:8px">${g.tips.map(t => `<li class="info">${esc(t)}</li>`).join('')}</ul></details>` : ''}
       ${SD() && SD().principles ? `<details><summary>熱身與伸展原則</summary><ul class="tips" style="margin-top:8px">${SD().principles.map(t => `<li class="info">${esc(t)}</li>`).join('')}</ul></details>` : ''}
+      <div class="row" style="justify-content:flex-end;margin-top:12px;gap:6px"><button class="ghost small" data-foldall="1">全部收合</button><button class="ghost small" data-foldall="0">全部展開</button></div>
       ${s.blocks.map((b, i) => {
-        let h = '';
-        if (i === firstAddon) h += `<div class="phase"><div class="phase-title"><div class="no" style="background:#555">＋</div><h3>附加：${addon.emoji} ${addon.name}（第 ${addonVi} 套 ${esc(addonV.name)}，已熱身故直接做主項）</h3></div>`;
-        h += phaseHtml(b.ph, b.vid, date, !!b.addon);
-        if (i === lastAddon) h += '</div>';
-        return h;
+        if (!b.addon) return phaseHtml(b.ph, b.vid, date, false);
+        if (i !== firstAddon) return '';
+        // 附加部位的各段合成一個可收合區塊
+        return foldWrap('addon', date, 'phase',
+          `<div class="no" style="background:#555">＋</div><h3>附加：${addon.emoji} ${addon.name}（第 ${addonVi} 套 ${esc(addonV.name)}，已熱身故直接做主項）</h3>`,
+          addonBlocks.map(x => phaseHtml(x.ph, x.vid, date, true)).join(''),
+          addonBlocks.flatMap(x => x.ph.items.map((_, j) => `${x.vid}:${x.ph.key}:${j}`)),
+          addonBlocks.flatMap(x => x.ph.items.map(it => it.name)));
       }).join('')}
     </div>
     ${fuelCard(w)}`;
@@ -475,18 +479,54 @@ window.TrainPage = (function () {
       if (c.checked) done[c.dataset.done] = true; else delete done[c.dataset.done];
       snapshot(date);
       Store.save(); c.closest('.ex').classList.toggle('done', c.checked);
+      const f = c.closest('.fold'); if (f) updateFold(f, date);
       // 月曆上的完成狀態跟著更新
       if ((st.trainView || 'calendar') === 'calendar') renderCalendar();
       App.refresh('train');
     }));
     $$('[data-rest]', box).forEach(b => b.addEventListener('click', () => Timer.start(+b.dataset.rest, b.dataset.name)));
+    $$('[data-fold-btn]', box).forEach(h => h.addEventListener('click', () => { const f = h.closest('.fold'); setFold(f, date, !f.classList.contains('folded')); }));
+    $$('[data-foldall]', box).forEach(b => b.addEventListener('click', () => $$('.fold', box).forEach(f => setFold(f, date, b.dataset.foldall === '1'))));
+  }
+
+  // ---- 段落收合 ----
+  // 沒做完的段落：收合狀態依段落種類記住（例如習慣收起運動前伸展）；整段做完：預設收起，手動展開只在這次有效
+  const foldOpen = new Set();
+  function foldWrap(fk, date, cls, head, body, keys, names) {
+    const done = Store.get().done[date] || {};
+    const n = keys.filter(k => done[k]).length, total = keys.length;
+    const complete = total > 0 && n === total;
+    const folded = complete ? !foldOpen.has(date + ':' + fk) : !!(Store.get().phaseFold || {})[fk];
+    return `<div class="${cls} fold ${folded ? 'folded' : ''}" data-fold="${fk}" data-complete="${complete ? 1 : 0}">
+      <div class="phase-title" data-fold-btn title="點一下收合／展開">${head}<span class="pill ${complete ? 'good' : 'gray'} ph-cnt">${complete ? '✓ ' : ''}${n}/${total}</span><span class="chev">›</span></div>
+      <div class="ph-sum">${esc(names.map(x => x.replace(/（.*?）/g, '')).join('、'))}</div>
+      <div class="phase-body">${body}</div></div>`;
+  }
+  function setFold(f, date, fold) {
+    const fk = f.dataset.fold;
+    if (f.dataset.complete === '1') { if (fold) foldOpen.delete(date + ':' + fk); else foldOpen.add(date + ':' + fk); }
+    else {
+      const st = Store.get(); const pf = st.phaseFold || (st.phaseFold = {});
+      if (fold) pf[fk] = true; else delete pf[fk];
+      Store.save();
+    }
+    f.classList.toggle('folded', fold);
+  }
+  // 打勾後更新進度；整段剛做完就自動收起
+  function updateFold(f, date) {
+    const cs = $$('[data-done]', f);
+    const n = cs.filter(c => c.checked).length, complete = n === cs.length;
+    const was = f.dataset.complete === '1';
+    f.dataset.complete = complete ? 1 : 0;
+    const cnt = $('.ph-cnt', f);
+    cnt.className = `pill ${complete ? 'good' : 'gray'} ph-cnt`; cnt.textContent = `${complete ? '✓ ' : ''}${n}/${cs.length}`;
+    if (complete && !was) { foldOpen.delete(date + ':' + f.dataset.fold); setTimeout(() => f.classList.add('folded'), 350); }
+    if (!complete && was) f.classList.toggle('folded', !!(Store.get().phaseFold || {})[f.dataset.fold]);
   }
 
   function phaseHtml(ph, vid, date, compact) {
     const done = Store.get().done[date] || {};
-    return `<div class="phase ${ph.key}">
-      ${compact ? `<div class="small muted" style="margin:8px 0 4px">${esc(ph.title)}</div>` : `<div class="phase-title"><div class="no">${PHASE_NO[ph.key] || ''}</div><h3>${esc(ph.key === 'warmup' ? '專項熱身（輕重量）' : ph.title)}</h3></div>`}
-      ${ph.items.map((it, i) => {
+    const items = ph.items.map((it, i) => {
         const key = `${vid}:${ph.key}:${i}`;
         const a = adjustSets(it, ph.key);
         return `<div class="ex ${done[key] ? 'done' : ''}">
@@ -498,7 +538,11 @@ window.TrainPage = (function () {
           ${it.hold ? `<button class="ghost small rest-btn" data-hold="${it.hold}" data-name="${esc(it.name)}">⏱ 計時 ${it.hold} 秒</button>`
             : it.rest ? `<button class="ghost small rest-btn" data-rest="${it.rest}" data-name="${esc(it.name)}">⏱ 休息 ${U.fmtRest(it.rest)}</button>` : '<span></span>'}
         </div>`;
-      }).join('')}</div>`;
+    }).join('');
+    if (compact) return `<div class="phase ${ph.key}"><div class="small muted" style="margin:8px 0 4px">${esc(ph.title)}</div>${items}</div>`;
+    return foldWrap(ph.key, date, 'phase ' + ph.key,
+      `<div class="no">${PHASE_NO[ph.key] || ''}</div><h3>${esc(ph.key === 'warmup' ? '專項熱身（輕重量）' : ph.title)}</h3>`,
+      items, ph.items.map((_, i) => `${vid}:${ph.key}:${i}`), ph.items.map(it => it.name));
   }
 
   // 今日訓練摘要（總覽頁用）

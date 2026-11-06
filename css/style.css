@@ -198,6 +198,15 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .phase.pre .no { background: #0ea5e9; } .phase.post .no { background: #14b8a6; } .phase.restday .no { background: #14b8a6; }
 .phase.warmup .no { background: #f0a43a; } .phase.activation .no { background: #e2563f; }
 .phase.main .no { background: #c2185b; } .phase.accessory .no { background: #6a4fd8; } .phase.cooldown .no { background: #2a9d8f; }
+/* 段落收合 */
+.fold > .phase-title { cursor: pointer; user-select: none; border-radius: 10px; padding: 4px 6px; margin-left: -6px; margin-right: -6px; }
+.fold > .phase-title:hover { background: var(--panel-2); }
+.phase-title .ph-cnt { flex: none; }
+.phase-title .chev { margin-left: auto; flex: none; width: 24px; text-align: center; color: var(--muted); font-size: 24px; line-height: 1; transform: rotate(90deg); transition: transform .15s; }
+.fold.folded > .phase-title .chev { transform: none; }
+.fold.folded > .phase-body { display: none; }
+.ph-sum { display: none; font-size: 12px; color: var(--muted); margin: -4px 0 0 36px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.fold.folded > .ph-sum { display: block; }
 .ex { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--panel); align-items: start; }
 .ex.done { opacity: .55; }
 .ex.done .ex-name { text-decoration: line-through; }
