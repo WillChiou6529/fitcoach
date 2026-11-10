@@ -284,6 +284,14 @@ svg text { fill: var(--muted); font-size: 11px; }
   .week-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
+/* ---- 重量計算 ---- */
+.lift { margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: var(--panel-2); font-size: 13px; }
+.lift:has(> button:only-child) { background: none; padding: 0; }
+.lift-res { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.lift-res b { color: var(--brand); }
+.lift-res button { margin-left: auto; }
+.lift .f input { width: 100%; }
+
 /* ---- 熱量赤字 ---- */
 .bal-mini { display: flex; flex-direction: column; gap: 6px; }
 .bal-eq { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; font-size: 20px; font-weight: 800; }

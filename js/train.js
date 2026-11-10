@@ -583,7 +583,7 @@ window.TrainPage = (function () {
           <div><div class="ex-name">${esc(it.name)}</div>
             <div class="ex-meta"><span class="sr">${a.sets} 組 × ${esc(it.reps)}</span>
               <span>休息 ${U.fmtRest(it.rest)}</span>${it.load ? `<span>強度 ${esc(it.load)}</span>` : ''}${it.tempo ? `<span title="離心-停頓-向心（秒）">節奏 ${esc(it.tempo)}</span>` : ''}${a.why ? `<span>${a.why}</span>` : ''}</div>
-            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}</div>
+            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}${Lift.html(it, ph.key, key)}</div>
           ${it.hold ? `<button class="ghost small rest-btn" data-hold="${it.hold}" data-name="${esc(it.name)}">⏱ 計時 ${it.hold} 秒</button>`
             : it.rest ? `<button class="ghost small rest-btn" data-rest="${it.rest}" data-name="${esc(it.name)}">⏱ 休息 ${U.fmtRest(it.rest)}</button>` : '<span></span>'}
         </div>`;
