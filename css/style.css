@@ -292,6 +292,26 @@ svg text { fill: var(--muted); font-size: 11px; }
 .lift-res button { margin-left: auto; }
 .lift .f input { width: 100%; }
 
+/* ---- 換動作 ---- */
+.swap-btn { margin-top: 6px; }
+.swap-on { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
+.swap-sheet { position: fixed; inset: 0; z-index: 90; }
+.swap-back { position: absolute; inset: 0; background: rgba(10, 15, 25, .5); }
+.swap-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 560px; max-width: calc(100vw - 24px); max-height: calc(100vh - 48px); overflow: auto;
+  background: var(--panel); color: var(--text); border-radius: 16px; padding: 14px 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
+.swap-list { display: flex; flex-direction: column; gap: 8px; }
+.swap-item { display: flex; gap: 10px; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 12px; }
+.swap-item.on { border-color: var(--brand); background: var(--panel-2); }
+.swap-item .fit { color: #f5a524; font-size: 12px; letter-spacing: 1px; white-space: nowrap; }
+.swap-act { display: flex; flex-direction: column; gap: 4px; flex: none; }
+body.no-scroll { overflow: hidden; }
+@media (max-width: 760px) {
+  .swap-panel { left: 0; right: 0; bottom: 0; top: auto; transform: none; width: auto; max-width: none; max-height: 85vh; border-radius: 16px 16px 0 0; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .swap-item { flex-direction: column; align-items: stretch; }
+  .swap-act { flex-direction: row; }
+  .swap-act button { flex: 1; }
+}
+
 /* ---- 熱量赤字 ---- */
 .bal-mini { display: flex; flex-direction: column; gap: 6px; }
 .bal-eq { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; font-size: 20px; font-weight: 800; }

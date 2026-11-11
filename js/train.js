@@ -575,15 +575,16 @@ window.TrainPage = (function () {
 
   function phaseHtml(ph, vid, date, compact) {
     const done = Store.get().done[date] || {};
-    const items = ph.items.map((it, i) => {
+    const items = ph.items.map((it0, i) => {
         const key = `${vid}:${ph.key}:${i}`;
+        const { it, sw } = Swap.resolve(it0, ph.key, date, key);
         const a = adjustSets(it, ph.key);
         return `<div class="ex ${done[key] ? 'done' : ''}">
           <input type="checkbox" data-done="${key}" ${done[key] ? 'checked' : ''} title="完成打勾">
           <div><div class="ex-name">${esc(it.name)}</div>
             <div class="ex-meta"><span class="sr">${a.sets} 組 × ${esc(it.reps)}</span>
               <span>休息 ${U.fmtRest(it.rest)}</span>${it.load ? `<span>強度 ${esc(it.load)}</span>` : ''}${it.tempo ? `<span title="離心-停頓-向心（秒）">節奏 ${esc(it.tempo)}</span>` : ''}${a.why ? `<span>${a.why}</span>` : ''}</div>
-            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}${Lift.html(it, ph.key, key)}</div>
+            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}${Lift.html(it, ph.key, key)}${compact ? '' : Swap.button(it0, ph.key, key, sw)}</div>
           ${it.hold ? `<button class="ghost small rest-btn" data-hold="${it.hold}" data-name="${esc(it.name)}">⏱ 計時 ${it.hold} 秒</button>`
             : it.rest ? `<button class="ghost small rest-btn" data-rest="${it.rest}" data-name="${esc(it.name)}">⏱ 休息 ${U.fmtRest(it.rest)}</button>` : '<span></span>'}
         </div>`;
@@ -602,7 +603,7 @@ window.TrainPage = (function () {
     return { g: s.g, v: s.v, addon: s.addon, total: st.total, done: st.n, main: (s.v.phases.find(p => p.key === 'main') || { items: [] }).items };
   }
 
-  return { render, todaySummary, planFor, status, burnOf };
+  return { render, todaySummary, planFor, status, burnOf, redraw: () => renderDetail(), selected: () => selDate };
 })();
 
 // 組間休息／伸展計時器（右下角浮動）

@@ -161,10 +161,11 @@ window.App = (function () {
     if (!Store.save()) U.toast('⚠️ 瀏覽器不允許存資料，關掉後紀錄會消失');
     initTheme();
     if (window.Capacitor) document.documentElement.classList.add('in-app');
-    // App 版的返回鍵：先關計時器 → 回總覽 → 才離開 App
+    // App 版的返回鍵：先關換動作面板、計時器 → 回總覽 → 才離開 App
     const capApp = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App;
     if (capApp) capApp.addListener('backButton', () => {
-      if (!$('#timer').classList.contains('hidden')) Timer.stop();
+      if (document.querySelector('.swap-sheet')) Swap.close();
+      else if (!$('#timer').classList.contains('hidden')) Timer.stop();
       else if (current !== 'home') go('home');
       else capApp.exitApp();
     });
