@@ -22,7 +22,7 @@ window.Tour = (function () {
     { page: 'diet', find: () => { const t = $('#dTips'); return t && t.closest('.card'); }, title: '⑩ 教練建議', text: '依你今天吃的內容給建議：怎麼換比較省熱量、蛋白質還差多少、剩下的熱量可以吃什麼。' },
     { page: 'train', find: () => { const b = $('[data-tpl]'); return b && b.closest('.row'); }, title: '⑪ 一鍵排課表', text: '第一次先選「每週幾天」，會自動排好每天練的部位，之後也可以個別調整。' },
     { page: 'train', find: sel('#trainTop .cal-grid') , alt: sel('.cal-grid'), title: '⑫ 訓練月曆', text: '每天練什麼、有沒有完成一眼看得到（綠＝完成、黃＝部分、紅＝漏練）。<b>點日期</b>就會打開那天的菜單。' },
-    { page: 'train', find: sel('#dayDetail'), title: '⑬ 當天菜單', text: '從熱身、充血、主訓練到收操，每個動作都有組數、次數和休息時間。<br>做完就打勾；按「⏱ 休息」開始倒數；<b>點段落標題可以收合</b>。<br>器材被占用？按「🔄 器材沒空？換動作」，換成練同部位的動作；「🏋️ 算我的正式重量」幫你算該用幾公斤。', tall: true },
+    { page: 'train', find: sel('#dayDetail'), title: '⑬ 當天菜單', text: '從熱身、充血、主訓練到收操，每個動作都有組數、次數和休息時間。<br>做完就打勾；按「⏱ 休息」開始倒數；<b>點段落標題可以收合</b>。<br>器材被占用？按「🔄 器材沒空？換動作」，換成練同部位的動作；「🏋️ 算我的正式重量」幫你算該用幾公斤；練完按「📝 記錄這次的重量」，會告訴你下次要不要加重。', tall: true },
     { page: 'train', find: sel('#burnCard'), title: '⑭ 消耗與熱量赤字', text: '打勾的動作會依組數、次數和休息時間算出消耗；練完跑跑步機，就在下面填時間和機器顯示的熱量。<br>程式會用「消耗 − 吃的」算出今天的<b>熱量赤字</b>，總覽和飲食頁也看得到。' },
     { page: 'sleep', find: card('sleep', '我的工作時間'), title: '⑮ 作息規劃', text: '輸入上下班時間和通勤時間，自動排好起床、睡覺、三餐、訓練時段和咖啡因截止時間（支援夜班）。' },
     { page: 'home', find: sel('#page-home .grid'), title: '⑯ 每天先看總覽', text: '今天還能吃多少、三大營養素進度、今天練什麼，這裡都看得到。' },

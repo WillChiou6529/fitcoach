@@ -188,7 +188,8 @@ window.TrainPage = (function () {
         <div class="row"><div class="seg" id="viewSeg"><button data-v="calendar" class="${view === 'calendar' ? 'on' : ''}">📅 月曆</button><button data-v="week" class="${view === 'week' ? 'on' : ''}">🗓️ 每週固定課表</button></div></div>
       </div>
       <div id="trainTop"></div>
-      <div id="dayDetail"></div>`;
+      <div id="dayDetail"></div>
+      <div class="card" id="liftProgress" style="margin-top:16px">${Lift.progress()}</div>`;
     $('#viewSeg').addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
       Store.get().trainView = b.dataset.v; Store.save(); render();
@@ -584,7 +585,7 @@ window.TrainPage = (function () {
           <div><div class="ex-name">${esc(it.name)}</div>
             <div class="ex-meta"><span class="sr">${a.sets} 組 × ${esc(it.reps)}</span>
               <span>休息 ${U.fmtRest(it.rest)}</span>${it.load ? `<span>強度 ${esc(it.load)}</span>` : ''}${it.tempo ? `<span title="離心-停頓-向心（秒）">節奏 ${esc(it.tempo)}</span>` : ''}${a.why ? `<span>${a.why}</span>` : ''}</div>
-            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}${Lift.html(it, ph.key, key)}${compact ? '' : Swap.button(it0, ph.key, key, sw)}</div>
+            ${it.note ? `<div class="ex-note">${esc(it.note)}</div>` : ''}${Lift.html(it, ph.key, key, date, a.sets)}${compact ? '' : Swap.button(it0, ph.key, key, sw)}</div>
           ${it.hold ? `<button class="ghost small rest-btn" data-hold="${it.hold}" data-name="${esc(it.name)}">⏱ 計時 ${it.hold} 秒</button>`
             : it.rest ? `<button class="ghost small rest-btn" data-rest="${it.rest}" data-name="${esc(it.name)}">⏱ 休息 ${U.fmtRest(it.rest)}</button>` : '<span></span>'}
         </div>`;

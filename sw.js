@@ -1,5 +1,5 @@
 // 離線快取（網頁版用；App 版內建檔案不需要）。改了任何檔案就把版本號 +1
-const CACHE = 'fitcoach-v7';
+const CACHE = 'fitcoach-v8';
 const FILES = [
   './',
   'css/style.css',

@@ -292,6 +292,18 @@ svg text { fill: var(--muted); font-size: 11px; }
 .lift-res button { margin-left: auto; }
 .lift .f input { width: 100%; }
 
+/* ---- 重量紀錄與進步 ---- */
+.lift-log { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 4px; }
+.log-row { display: grid; grid-template-columns: 52px 1fr auto 1fr auto; gap: 6px; align-items: center; margin-top: 4px; }
+.log-row input { width: 100%; min-width: 0; }
+.prog-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.prog { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.prog summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; list-style: none; }
+.prog summary::-webkit-details-marker { display: none; }
+.prog-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.prog .spark { flex: none; }
+.prog table { margin-top: 8px; }
+
 /* ---- 換動作 ---- */
 .swap-btn { margin-top: 6px; }
 .swap-on { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
